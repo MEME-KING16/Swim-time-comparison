@@ -1,4 +1,9 @@
-
+let currentversion = "1.0.1-rc.1"
+if (version != currentversion && !currentversion.includes("rc")) {
+    if (confirm(`There is a newer version (${version}) available. Do you want to update?`)) {
+        window.location.href = `https://github.com/MEME-KING16/Swim-time-comparison/releases/tag/v${version}`
+    }
+}
 function convertTimeToSeconds(timeStr) {
     if (typeof timeStr !== 'string') {
         console.log(timeStr)
@@ -107,12 +112,11 @@ function convertTimeToSeconds(timeStr) {
   }
   let time
   let nonRegionalEvents = ["50m Breaststroke50m","50m Breaststroke25m","50m Butterfly50m","50m Butterfly25m","100m Medley50m","100m Medley25m","50m Backstroke50m","50m Backstroke25m"]
-  // Replace with the actual athlete ID (for example, "5597992")
-  function times() {
-    localStorage.setItem("Athlete Id",document.getElementById("id").value)
-  scrapeAthleteTimes(`${document.getElementById("id").value}`).then(result => {
+  function times(id) {
+  scrapeAthleteTimes(`${id}`).then(result => {
     console.log("Final result:", result);
     time = []
+    time.push(`<br>${id}<br>`)
     for (let index = 0; index < Object.keys(result.times).length; index++) {
         if(nonRegionalEvents.indexOf(result.times[index].event+result.times[index].course) != -1 || (result.times[index].event+result.times[index].course).includes("Lap"))
             continue
@@ -122,10 +126,17 @@ function convertTimeToSeconds(timeStr) {
         time.push(`${result.times[index].event}(${result.times[index].course}) ${result.times[index].time} : Drop Needed for Regionals: ${((convertTimeToSeconds(result.times[index].time) - convertTimeToSeconds(standards[result.gender][`${result.age}`][result.times[index].event][`${result.times[index].course}`]))/convertTimeToSeconds(result.times[index].time)*100).toFixed(2)}% <br>`);
         
     }
-    document.getElementById("regionals").innerHTML = time.join('')
+    document.getElementById("regionals").innerHTML += time.join('')
   });
 }
 if(localStorage.getItem("Athlete Id")) {
     document.getElementById("id").value = localStorage.getItem("Athlete Id")
-    times()
+    getTimes()
+}
+
+function getTimes() {
+    document.getElementById("regionals").innerHTML = ""
+    for (let index = 0; index < document.getElementById("id").value.split(",").length; index++) {
+        times(document.getElementById("id").value.split(",")[index])   
+    }
 }
