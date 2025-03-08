@@ -139,6 +139,7 @@ if(localStorage.getItem("Athlete Id")) {
 }
 
 function getTimes() {
+    localStorage.setItem("Athlete Id",document.getElementById("id").value)
     document.getElementById("regionals").innerHTML = ""
     for (let index = 0; index < document.getElementById("id").value.split(",").length; index++) {
         times(document.getElementById("id").value.split(",")[index])   
