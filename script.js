@@ -1,4 +1,7 @@
-let currentversion = "1.0.1-rc.1"
+let currentversion = "1.0.1"
+function capitalizeFirstLetter(val) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
 if (version != currentversion && !currentversion.includes("rc")) {
     if (confirm(`There is a newer version (${version}) available. Do you want to update?`)) {
         window.location.href = `https://github.com/MEME-KING16/Swim-time-comparison/releases/tag/v${version}`
@@ -51,6 +54,7 @@ function convertTimeToSeconds(timeStr) {
       // Extract the athlete's age from the element with id "name"
       let age = null;
       const nameDiv = doc.querySelector('#name');
+      let name = nameDiv.innerHTML.split(" <br>")[0].split(", ")
       if (nameDiv) {
         const text = nameDiv.textContent;
         // Match a 4-digit number after an opening parenthesis, e.g., "(2010"
@@ -102,12 +106,12 @@ function convertTimeToSeconds(timeStr) {
         }
       });
   
-      const result = { age, gender, times };
+      const result = { age, gender, times, name };
       console.log(JSON.stringify(result, null, 2));
       return result;
     } catch (error) {
       console.error('Error fetching athlete times:', error);
-      return { age: null, gender: null, times: [] };
+      return { age: null, gender: null, times: [], name: null };
     }
   }
   let time
@@ -116,7 +120,7 @@ function convertTimeToSeconds(timeStr) {
   scrapeAthleteTimes(`${id}`).then(result => {
     console.log("Final result:", result);
     time = []
-    time.push(`<br>${id}<br>`)
+    time.push(`<br>${result.name[1]} ${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())} (${id})<br>`)
     for (let index = 0; index < Object.keys(result.times).length; index++) {
         if(nonRegionalEvents.indexOf(result.times[index].event+result.times[index].course) != -1 || (result.times[index].event+result.times[index].course).includes("Lap"))
             continue
