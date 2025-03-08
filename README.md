@@ -1,3 +1,2 @@
-# Swim-time-comparison
-## Setup
-Go to <https://cors-anywhere.herokuapp.com/> and get the demo or host this on a local webserver
+# API
+This is an api to check if your version is up to date.
