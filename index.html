@@ -1,6 +1,13 @@
 <link rel="stylesheet" href="style.css">
+<div id="content">
 <input placeholder="Athlete Id (swimrankings.net)" id="id" onchange="getTimes()">
+<button onclick="openSettings()">Settings</button>
 <div id="regionals"></div>
+</div>
+<div id="settings" style="display: none;">
+    Min Days For Highlight <input id="MinDaysForHighlight" value="365" onchange="settings.MinDaysForHighlight = document.getElementById('MinDaysForHighlight').value;localStorage.setItem('SwimSettings',JSON.stringify(settings))">
+    <button onclick="closeSettings()">Back</button>
+</div>
 <script src="https://meme-king16.github.io/Swim-time-comparison/update.js"></script>
 <script src="standards.js"></script>
 <script src="script.js"></script>
