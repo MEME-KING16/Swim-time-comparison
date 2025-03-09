@@ -1,4 +1,4 @@
-let currentversion = "1.2.0"
+let currentversion = "1.3.0"
 let settings
 if (localStorage.getItem("settings")) {
     settings = JSON.parse(localStorage.getItem("settings"))
@@ -41,6 +41,15 @@ function convertTimeToSeconds(timeStr) {
 
     // Calculate total time in seconds and return
     return minutes * 60 + seconds;
+}
+
+function calculateScore(percentDropNeeded, days, gender, alphaMale = 0.03, alphaFemale = 0.05) {
+    if (percentDropNeeded < 0) return Infinity;
+    let alpha = gender === "male" ? alphaMale : alphaFemale;
+    let normalizedPercent = 100 - percentDropNeeded;
+    let timeBoost = 1 + Math.log1p(days) * alpha
+
+    return Math.max(0, normalizedPercent * timeBoost * 100);
 }
 
 function daysAgo(dateString) {
@@ -137,11 +146,12 @@ function daysAgo(dateString) {
     for (let index = 0; index < Object.keys(result.times).length; index++) {
         if(nonRegionalEvents.indexOf(result.times[index].event+result.times[index].course) != -1 || (result.times[index].event+result.times[index].course).includes("Lap"))
             continue
-        time.push(`<span class="${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${result.times[index].event}(${result.times[index].course})(<span class="date ${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${result.times[index].date}</span>) ${result.times[index].time} : Drop Needed for Regionals: <span class="percent ${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${((convertTimeToSeconds(result.times[index].time) - convertTimeToSeconds(standards[result.gender][`${result.age}`][result.times[index].event][`${result.times[index].course}`]))/convertTimeToSeconds(result.times[index].time)*100).toFixed(2)}%</span></span> <br>`);
+        time.push(`<span class="${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${result.times[index].event}(${result.times[index].course})(<span class="date ${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${result.times[index].date}</span>) ${result.times[index].time} : Drop Needed for Regionals: <span class="percent ${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${((convertTimeToSeconds(result.times[index].time) - convertTimeToSeconds(standards[result.gender][`${result.age}`][result.times[index].event][`${result.times[index].course}`]))/convertTimeToSeconds(result.times[index].time)*100).toFixed(2)}%</span></span> Score: (<span class="score ${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${calculateScore(((convertTimeToSeconds(result.times[index].time) - convertTimeToSeconds(standards[result.gender][`${result.age}`][result.times[index].event][`${result.times[index].course}`]))/convertTimeToSeconds(result.times[index].time)*100).toFixed(2),daysAgo(result.times[index].date),result.gender).toFixed(0)}</span>) <br>`);
     }
     document.getElementById("regionals").innerHTML += time.join('')
     highlightTimes(`${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}`);
     highlightDates(`${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}`);
+    highlightScores(`${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}`);
   });
 }
 if(localStorage.getItem("Athlete Id")) {
@@ -169,6 +179,25 @@ function highlightDates(name) {
         }
     });
 }
+
+function highlightScores(name) {
+    let elements = document.getElementsByClassName(name + " score");
+    let values = Array.from(elements, el => parseFloat(el.innerHTML));
+
+    let finiteValues = values.filter(value => isFinite(value));
+
+    if (finiteValues.length === 0) return;
+
+    let minValue = Math.min(...finiteValues);
+    let maxValue = Math.max(...finiteValues);
+
+    let minIndex = values.indexOf(minValue);
+    let maxIndex = values.indexOf(maxValue);
+
+    if (minIndex !== -1) elements[minIndex].classList.add("max");
+    if (maxIndex !== -1) elements[maxIndex].classList.add("min");
+}
+
 
 function getTimes() {
     localStorage.setItem("Athlete Id",document.getElementById("id").value)
