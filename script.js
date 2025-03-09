@@ -1,4 +1,14 @@
-let currentversion = "1.1.1"
+let currentversion = "1.2.0"
+let settings
+if (localStorage.getItem("settings")) {
+    settings = JSON.parse(localStorage.getItem("settings"))
+    document.getElementById("MinDaysForHighlight").value = settings.MinDaysForHighlight
+} else {
+    settings = {
+        MinDaysForHighlight:365
+    }
+}
+
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
@@ -33,6 +43,12 @@ function convertTimeToSeconds(timeStr) {
     return minutes * 60 + seconds;
 }
 
+function daysAgo(dateString) {
+    const givenDate = new Date(dateString);
+    const today = new Date();
+    const difference = today - givenDate;
+    return Math.floor(difference / (1000 * 60 * 60 * 24));
+}
 
   async function scrapeAthleteTimes(athleteId) {
     const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
@@ -121,10 +137,11 @@ function convertTimeToSeconds(timeStr) {
     for (let index = 0; index < Object.keys(result.times).length; index++) {
         if(nonRegionalEvents.indexOf(result.times[index].event+result.times[index].course) != -1 || (result.times[index].event+result.times[index].course).includes("Lap"))
             continue
-        time.push(`<span class="${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${result.times[index].event}(${result.times[index].course}) ${result.times[index].time} : Drop Needed for Regionals: <span class="percent ${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${((convertTimeToSeconds(result.times[index].time) - convertTimeToSeconds(standards[result.gender][`${result.age}`][result.times[index].event][`${result.times[index].course}`]))/convertTimeToSeconds(result.times[index].time)*100).toFixed(2)}%</span></span> <br>`);
+        time.push(`<span class="${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${result.times[index].event}(${result.times[index].course})(<span class="date ${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${result.times[index].date}</span>) ${result.times[index].time} : Drop Needed for Regionals: <span class="percent ${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${((convertTimeToSeconds(result.times[index].time) - convertTimeToSeconds(standards[result.gender][`${result.age}`][result.times[index].event][`${result.times[index].course}`]))/convertTimeToSeconds(result.times[index].time)*100).toFixed(2)}%</span></span> <br>`);
     }
     document.getElementById("regionals").innerHTML += time.join('')
-    highlight(`${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}`); 
+    highlightTimes(`${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}`);
+    highlightDates(`${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}`);
   });
 }
 if(localStorage.getItem("Athlete Id")) {
@@ -132,7 +149,7 @@ if(localStorage.getItem("Athlete Id")) {
     getTimes()
 }
 
-function highlight(name) {
+function highlightTimes(name) {
     let elements = document.getElementsByClassName(name+" percent")
     let values = Array.from(elements, el => parseFloat(el.innerHTML.split("%")[0]) || Infinity);
     let minIndex = values.indexOf(Math.min(...values));
@@ -143,10 +160,30 @@ function highlight(name) {
     maxElement.classList.add("max")
 }
 
+function highlightDates(name) {
+    let elements = Array.from(document.getElementsByClassName(name + " date"));
+    let values = Array.from(elements, el => daysAgo(el.innerHTML.replaceAll("&nbsp;"," ")) || Infinity);
+    elements.forEach((el, i) => {
+        if (values[i] > 100) {
+            el.classList.add("max");
+        }
+    });
+}
+
 function getTimes() {
     localStorage.setItem("Athlete Id",document.getElementById("id").value)
     document.getElementById("regionals").innerHTML = ""
     for (let index = 0; index < document.getElementById("id").value.split(",").length; index++) {
         times(document.getElementById("id").value.split(",")[index])
     }
+}
+
+function openSettings() {
+    document.getElementById("content").style.display = "none"
+    document.getElementById("settings").style.display = "block"
+}
+
+function closeSettings() {
+    document.getElementById("content").style.display = "block"
+    document.getElementById("settings").style.display = "none"
 }
