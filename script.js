@@ -1,4 +1,4 @@
-let currentversion = "1.0.1"
+let currentversion = "1.1.0rc"
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
@@ -9,7 +9,6 @@ if (version != currentversion && !currentversion.includes("rc")) {
 }
 function convertTimeToSeconds(timeStr) {
     if (typeof timeStr !== 'string') {
-        console.log(timeStr)
     }
 
     if (!timeStr.includes(':')) {
@@ -107,7 +106,6 @@ function convertTimeToSeconds(timeStr) {
       });
   
       const result = { age, gender, times, name };
-      console.log(JSON.stringify(result, null, 2));
       return result;
     } catch (error) {
       console.error('Error fetching athlete times:', error);
@@ -115,27 +113,35 @@ function convertTimeToSeconds(timeStr) {
     }
   }
   let time
+  let people = []
   let nonRegionalEvents = ["50m Breaststroke50m","50m Breaststroke25m","50m Butterfly50m","50m Butterfly25m","100m Medley50m","100m Medley25m","50m Backstroke50m","50m Backstroke25m"]
   function times(id) {
   scrapeAthleteTimes(`${id}`).then(result => {
-    console.log("Final result:", result);
     time = []
     time.push(`<br>${result.name[1]} ${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())} (${id})<br>`)
     for (let index = 0; index < Object.keys(result.times).length; index++) {
         if(nonRegionalEvents.indexOf(result.times[index].event+result.times[index].course) != -1 || (result.times[index].event+result.times[index].course).includes("Lap"))
             continue
-        console.log(result.times[index].event)
-        console.log(result.times[index].time)
-        console.log(standards[result.gender][`${result.age}`][result.times[index].event][`${result.times[index].course}`])
-        time.push(`${result.times[index].event}(${result.times[index].course}) ${result.times[index].time} : Drop Needed for Regionals: ${((convertTimeToSeconds(result.times[index].time) - convertTimeToSeconds(standards[result.gender][`${result.age}`][result.times[index].event][`${result.times[index].course}`]))/convertTimeToSeconds(result.times[index].time)*100).toFixed(2)}% <br>`);
-        
+        time.push(`<span class="${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${result.times[index].event}(${result.times[index].course}) ${result.times[index].time} : Drop Needed for Regionals: <span class="percent ${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${((convertTimeToSeconds(result.times[index].time) - convertTimeToSeconds(standards[result.gender][`${result.age}`][result.times[index].event][`${result.times[index].course}`]))/convertTimeToSeconds(result.times[index].time)*100).toFixed(2)}%</span></span> <br>`);
     }
     document.getElementById("regionals").innerHTML += time.join('')
+    people.push(`${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}`)
   });
 }
 if(localStorage.getItem("Athlete Id")) {
     document.getElementById("id").value = localStorage.getItem("Athlete Id")
     getTimes()
+}
+
+function highlight(name) {
+    let elements = document.getElementsByClassName(name+" percent")
+    let values = Array.from(elements, el => parseFloat(el.innerHTML.split("%")[0]) || Infinity);
+    let minIndex = values.indexOf(Math.min(...values));
+    let minElement = elements[minIndex];
+    let maxIndex = values.indexOf(Math.max(...values));
+    let maxElement = elements[maxIndex];
+    minElement.classList.add("min")
+    maxElement.classList.add("max")
 }
 
 function getTimes() {
