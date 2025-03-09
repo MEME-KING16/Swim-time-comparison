@@ -1,4 +1,4 @@
-let currentversion = "1.1.0"
+let currentversion = "1.1.1"
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
@@ -113,7 +113,6 @@ function convertTimeToSeconds(timeStr) {
     }
   }
   let time
-  let people = []
   let nonRegionalEvents = ["50m Breaststroke50m","50m Breaststroke25m","50m Butterfly50m","50m Butterfly25m","100m Medley50m","100m Medley25m","50m Backstroke50m","50m Backstroke25m"]
   function times(id) {
   scrapeAthleteTimes(`${id}`).then(result => {
@@ -125,7 +124,7 @@ function convertTimeToSeconds(timeStr) {
         time.push(`<span class="${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${result.times[index].event}(${result.times[index].course}) ${result.times[index].time} : Drop Needed for Regionals: <span class="percent ${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}">${((convertTimeToSeconds(result.times[index].time) - convertTimeToSeconds(standards[result.gender][`${result.age}`][result.times[index].event][`${result.times[index].course}`]))/convertTimeToSeconds(result.times[index].time)*100).toFixed(2)}%</span></span> <br>`);
     }
     document.getElementById("regionals").innerHTML += time.join('')
-    people.push(`${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}`)
+    highlight(`${result.name[1]}_${capitalizeFirstLetter(result.name[0].toLocaleLowerCase())}`); 
   });
 }
 if(localStorage.getItem("Athlete Id")) {
@@ -148,9 +147,6 @@ function getTimes() {
     localStorage.setItem("Athlete Id",document.getElementById("id").value)
     document.getElementById("regionals").innerHTML = ""
     for (let index = 0; index < document.getElementById("id").value.split(",").length; index++) {
-        times(document.getElementById("id").value.split(",")[index])   
-    }
-    for (let index = 0; index < people.length; index++) {
-        highlight(people[index]); 
+        times(document.getElementById("id").value.split(",")[index])
     }
 }
