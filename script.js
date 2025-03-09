@@ -1,4 +1,4 @@
-let currentversion = "1.1.0rc"
+let currentversion = "1.1.0"
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
 }
