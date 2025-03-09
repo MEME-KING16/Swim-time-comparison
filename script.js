@@ -150,4 +150,7 @@ function getTimes() {
     for (let index = 0; index < document.getElementById("id").value.split(",").length; index++) {
         times(document.getElementById("id").value.split(",")[index])   
     }
+    for (let index = 0; index < people.length; index++) {
+        highlight(people[index]); 
+    }
 }
